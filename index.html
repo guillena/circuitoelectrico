@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <meta name="description" content="Juego educativo de circuitos eléctricos. Completá el circuito en serie arrastrando las piezas a sus posiciones correctas.">
+  <meta name="theme-color" content="#0F172A">
+  <title>Circuito Eléctrico — Nivel 1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="game-container">
+
+    <!-- ── HEADER ── -->
+    <header id="game-header">
+      <div class="header-icon">⚡</div>
+      <div class="header-text">
+        <h1>Circuito Eléctrico</h1>
+        <p>Nivel 1 &mdash; Circuito en Serie</p>
+      </div>
+    </header>
+
+    <!-- ── CIRCUIT BOARD ── -->
+    <main id="circuit-wrapper">
+      <div id="circuit-area">
+        <!-- Background circuit image -->
+        <img
+          src="images/serial_circuit.png"
+          id="circuit-bg"
+          alt="Diagrama del circuito en serie"
+          draggable="false"
+        >
+
+        <!-- Invisible glow overlay for the fixed lamp (activated on success) -->
+        <div id="lamp-fixed-glow" class="lamp-glow-overlay"></div>
+
+        <!-- ── DROP SLOTS (positioned in % over the image) ── -->
+        <div class="drop-slot" id="slot-corner-tl"     data-slot="slot-corner-tl"></div>
+        <div class="drop-slot" id="slot-top-right"     data-slot="slot-top-right"></div>
+        <div class="drop-slot" id="slot-corner-tr"     data-slot="slot-corner-tr"></div>
+        <div class="drop-slot" id="slot-mid-right"     data-slot="slot-mid-right"></div>
+        <div class="drop-slot" id="slot-corner-br"     data-slot="slot-corner-br"></div>
+        <div class="drop-slot" id="slot-bottom-center" data-slot="slot-bottom-center"></div>
+        <div class="drop-slot" id="slot-corner-bl"     data-slot="slot-corner-bl"></div>
+        <div class="drop-slot" id="slot-mid-left"      data-slot="slot-mid-left"></div>
+      </div>
+    </main>
+
+    <!-- ── PIECE BANK ── -->
+    <section id="piece-bank" aria-label="Piezas disponibles">
+      <h2 class="bank-title">Piezas disponibles</h2>
+      <div id="bank-pieces">
+
+        <div class="bank-piece" id="bank-lamp" data-piece="lamp" role="button" tabindex="0" aria-label="Lámpara">
+          <img src="images/lamp.png" alt="Lámpara" draggable="false">
+          <span class="piece-label">Lámpara</span>
+          <span class="count-badge" id="count-lamp" style="display:none"></span>
+        </div>
+
+        <div class="bank-piece" id="bank-corner" data-piece="corner" role="button" tabindex="0" aria-label="Esquina ×4">
+          <img src="images/corner.png" alt="Esquina" draggable="false">
+          <span class="piece-label">Esquina</span>
+          <span class="count-badge" id="count-corner">×4</span>
+        </div>
+
+        <div class="bank-piece" id="bank-switch" data-piece="switch" role="button" tabindex="0" aria-label="Switch">
+          <img src="images/switch.png" alt="Switch" draggable="false">
+          <span class="piece-label">Switch</span>
+          <span class="count-badge" id="count-switch" style="display:none"></span>
+        </div>
+
+        <div class="bank-piece" id="bank-battery" data-piece="battery" role="button" tabindex="0" aria-label="Batería">
+          <img src="images/battery.png" alt="Batería" draggable="false">
+          <span class="piece-label">Batería</span>
+          <span class="count-badge" id="count-battery" style="display:none"></span>
+        </div>
+
+        <div class="bank-piece" id="bank-line" data-piece="line" role="button" tabindex="0" aria-label="Línea">
+          <img src="images/line.png" alt="Línea" draggable="false">
+          <span class="piece-label">Línea</span>
+          <span class="count-badge" id="count-line" style="display:none"></span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── CONTROL BUTTONS ── -->
+    <div id="controls">
+      <button id="btn-undo" class="btn btn-secondary" disabled aria-label="Deshacer último movimiento">
+        <span class="btn-icon">↩</span>
+        <span>Deshacer</span>
+      </button>
+      <button id="btn-reset" class="btn btn-secondary" aria-label="Reiniciar el circuito">
+        <span class="btn-icon">↺</span>
+        <span>Reiniciar</span>
+      </button>
+      <button id="btn-test" class="btn btn-primary" disabled aria-label="Probar el circuito">
+        <span class="btn-icon">⚡</span>
+        <span>Probar Circuito</span>
+      </button>
+    </div>
+
+  </div><!-- /game-container -->
+
+  <!-- ── TOAST NOTIFICATION ── -->
+  <div id="toast" role="alert" aria-live="assertive"></div>
+
+  <!-- ── SUCCESS OVERLAY ── -->
+  <div id="success-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="success-content">
+      <div class="success-icon">💡</div>
+      <h2 id="success-title">¡Circuito Completo!</h2>
+      <p>¡Excelente! Las dos lámparas del circuito en serie funcionan perfectamente.</p>
+      <button id="btn-next" class="btn btn-primary">
+        <span class="btn-icon">🎓</span>
+        <span>Siguiente Nivel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── DRAG GHOST (follows finger/cursor) ── -->
+  <div id="drag-ghost" aria-hidden="true"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>

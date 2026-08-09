@@ -1,0 +1,14 @@
+# Backups de imágenes generados automáticamente
+images/*.bak
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos temporales
+*.tmp
+*.log
+
+# Notas internas
+notes/
