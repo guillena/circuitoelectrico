@@ -12,13 +12,14 @@
 ────────────────────────────────────────────────────── */
 const SLOT_CONFIG = {
   //               correctPiece   rotation
-  'slot-corner-tl':     { correctPiece: 'corner',  rotation:  90 },
+  // corner.png base image = top-right corner (no rotation needed there)
+  'slot-corner-tl':     { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
   'slot-top-right':     { correctPiece: 'lamp',    rotation:   0 },
-  'slot-corner-tr':     { correctPiece: 'corner',  rotation: 180 },
+  'slot-corner-tr':     { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
   'slot-mid-right':     { correctPiece: 'line',    rotation:  90 },
-  'slot-corner-br':     { correctPiece: 'corner',  rotation: 270 },
+  'slot-corner-br':     { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
   'slot-bottom-center': { correctPiece: 'battery', rotation:   0 },
-  'slot-corner-bl':     { correctPiece: 'corner',  rotation:   0 },
+  'slot-corner-bl':     { correctPiece: 'corner',  rotation: 180 },  // 180°
   'slot-mid-left':      { correctPiece: 'switch',  rotation:   0 },
 };
 
