@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <meta name="description" content="Juego educativo de circuitos eléctricos. Completá el circuito en serie arrastrando las piezas a sus posiciones correctas.">
+  <meta name="description" content="Juego educativo de circuitos eléctricos. Completá el circuito en serie y paralelo arrastrando las piezas a sus posiciones correctas.">
   <meta name="theme-color" content="#0F172A">
-  <title>Circuito Eléctrico — Nivel 1</title>
+  <title>Circuito Eléctrico</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -20,33 +20,57 @@
       <div class="header-icon">⚡</div>
       <div class="header-text">
         <h1>Circuito Eléctrico</h1>
-        <p>Nivel 1 &mdash; Circuito en Serie</p>
+        <p id="header-subtitle">Nivel 1 &mdash; Circuito en Serie</p>
+      </div>
+      <!-- Level indicator pills -->
+      <div class="level-pills" aria-label="Progreso de niveles">
+        <span class="level-pill active"  id="pill-1">1</span>
+        <span class="level-pill locked" id="pill-2">2</span>
       </div>
     </header>
 
     <!-- ── CIRCUIT BOARD ── -->
     <main id="circuit-wrapper">
       <div id="circuit-area">
-        <!-- Background circuit image -->
+
+        <!-- Background circuit image (swapped on level change) -->
         <img
           src="images/serial_circuit.png"
           id="circuit-bg"
-          alt="Diagrama del circuito en serie"
+          alt="Diagrama del circuito"
           draggable="false"
         >
 
-        <!-- Invisible glow overlay for the fixed lamp (activated on success) -->
+        <!-- Glow overlay for the fixed top lamp -->
         <div id="lamp-fixed-glow" class="lamp-glow-overlay"></div>
 
-        <!-- ── DROP SLOTS (positioned in % over the image) ── -->
-        <div class="drop-slot" id="slot-corner-tl"     data-slot="slot-corner-tl"></div>
-        <div class="drop-slot" id="slot-top-right"     data-slot="slot-top-right"></div>
-        <div class="drop-slot" id="slot-corner-tr"     data-slot="slot-corner-tr"></div>
-        <div class="drop-slot" id="slot-mid-right"     data-slot="slot-mid-right"></div>
-        <div class="drop-slot" id="slot-corner-br"     data-slot="slot-corner-br"></div>
-        <div class="drop-slot" id="slot-bottom-center" data-slot="slot-bottom-center"></div>
-        <div class="drop-slot" id="slot-corner-bl"     data-slot="slot-corner-bl"></div>
-        <div class="drop-slot" id="slot-mid-left"      data-slot="slot-mid-left"></div>
+        <!-- ══ LEVEL 1 SLOTS ══ -->
+        <div id="level1-slots">
+          <div class="drop-slot" id="slot-corner-tl"     data-slot="slot-corner-tl"></div>
+          <div class="drop-slot" id="slot-top-right"     data-slot="slot-top-right"></div>
+          <div class="drop-slot" id="slot-corner-tr"     data-slot="slot-corner-tr"></div>
+          <div class="drop-slot" id="slot-mid-right"     data-slot="slot-mid-right"></div>
+          <div class="drop-slot" id="slot-corner-br"     data-slot="slot-corner-br"></div>
+          <div class="drop-slot" id="slot-bottom-center" data-slot="slot-bottom-center"></div>
+          <div class="drop-slot" id="slot-corner-bl"     data-slot="slot-corner-bl"></div>
+          <div class="drop-slot" id="slot-mid-left"      data-slot="slot-mid-left"></div>
+        </div>
+
+        <!-- ══ LEVEL 2 SLOTS ══ -->
+        <div id="level2-slots" class="hidden">
+          <div class="drop-slot" id="p-slot-corner-tl"      data-slot="p-slot-corner-tl"></div>
+          <div class="drop-slot" id="p-slot-pline-left"     data-slot="p-slot-pline-left"></div>
+          <div class="drop-slot" id="p-slot-pline-right"    data-slot="p-slot-pline-right"></div>
+          <div class="drop-slot" id="p-slot-corner-tr"      data-slot="p-slot-corner-tr"></div>
+          <div class="drop-slot" id="p-slot-mid-left"       data-slot="p-slot-mid-left"></div>
+          <div class="drop-slot" id="p-slot-corner-mr-top"  data-slot="p-slot-corner-mr-top"></div>
+          <div class="drop-slot" id="p-slot-lamp-center"    data-slot="p-slot-lamp-center"></div>
+          <div class="drop-slot" id="p-slot-corner-mr-bot"  data-slot="p-slot-corner-mr-bot"></div>
+          <div class="drop-slot" id="p-slot-corner-bl"      data-slot="p-slot-corner-bl"></div>
+          <div class="drop-slot" id="p-slot-battery"        data-slot="p-slot-battery"></div>
+          <div class="drop-slot" id="p-slot-corner-br"      data-slot="p-slot-corner-br"></div>
+        </div>
+
       </div>
     </main>
 
@@ -85,6 +109,13 @@
           <span class="count-badge" id="count-line" style="display:none"></span>
         </div>
 
+        <!-- line-parallel: only shown in level 2 -->
+        <div class="bank-piece hidden" id="bank-pline" data-piece="pline" role="button" tabindex="0" aria-label="Línea Paralela ×2">
+          <img src="images/line-parallel.png" alt="Línea Paralela" draggable="false">
+          <span class="piece-label">Paralela</span>
+          <span class="count-badge" id="count-pline">×2</span>
+        </div>
+
       </div>
     </section>
 
@@ -112,19 +143,38 @@
   <!-- ── SUCCESS OVERLAY ── -->
   <div id="success-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="success-title">
     <div class="success-content">
-      <div class="success-icon">💡</div>
-      <h2 id="success-title">¡Circuito Completo!</h2>
-      <p>¡Excelente! Las dos lámparas del circuito en serie funcionan perfectamente.</p>
+      <img src="images/success.png" alt="Circuito en servicio" class="result-img">
+      <h2 id="success-title">Circuito en Servicio</h2>
+      <p id="success-msg">Construiste un circuito en serie.<br>La corriente dispone de un único recorrido.</p>
       <button id="btn-next" class="btn btn-primary">
         <span class="btn-icon">🎓</span>
-        <span>Siguiente Nivel</span>
+        <span id="btn-next-label">Siguiente desafío</span>
       </button>
+    </div>
+  </div>
+
+  <!-- ── FAIL OVERLAY ── -->
+  <div id="fail-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="fail-title">
+    <div class="fail-content">
+      <img src="images/fail.png" alt="Fuera de servicio" class="result-img">
+      <h2 id="fail-title">Fuera de Servicio</h2>
+      <p>El recorrido está interrumpido.<br>Revisá las conexiones e intentá nuevamente.</p>
+      <div class="fail-buttons">
+        <button id="btn-fail-back" class="btn btn-secondary">
+          <span class="btn-icon">↩</span>
+          <span>Volver al circuito</span>
+        </button>
+        <button id="btn-fail-reset" class="btn btn-danger">
+          <span class="btn-icon">↺</span>
+          <span>Reiniciar</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- ── DRAG GHOST (follows finger/cursor) ── -->
   <div id="drag-ghost" aria-hidden="true"></div>
 
-  <script src="game.js?v=2"></script>
+  <script src="game.js"></script>
 </body>
 </html>

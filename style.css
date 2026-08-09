@@ -85,6 +85,46 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/* Level pills */
+.level-pills {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.level-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.level-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.level-pill.completed {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+
+.level-pill.locked {
+  background: var(--bg-surface2);
+  color: var(--disabled-text);
+  border-color: var(--border);
+}
+
 .header-icon {
   font-size: clamp(1.5rem, 5.5vw, 1.9rem);
   line-height: 1;
@@ -199,9 +239,7 @@ body {
   display: block;
 }
 
-/* ── Slot positions (% relative to #circuit-area)
-      All slots are square (same width = height ≈ 17% of container).
-      Calibrate left/top to match the drawn boxes in serial_circuit.png ── */
+/* ── Slot positions LEVEL 1 (% relative to #circuit-area) ── */
 #slot-corner-tl     { left: 3%;   top: 2.5%; width: 19%; aspect-ratio: 1; }
 #slot-top-right     { left: 54%;  top: 2.5%; width: 19%; aspect-ratio: 1; }
 #slot-corner-tr     { left: 77%;  top: 2.5%; width: 19%; aspect-ratio: 1; }
@@ -210,6 +248,39 @@ body {
 #slot-bottom-center { left: 39%;  top: 79%;  width: 19%; aspect-ratio: 1; }
 #slot-corner-bl     { left: 3%;   top: 77%;  width: 19%; aspect-ratio: 1; }
 #slot-mid-left      { left: 3%;   top: 38%;  width: 19%; aspect-ratio: 1; }
+
+/* ── Slot container groups ── */
+#level1-slots, #level2-slots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#level1-slots .drop-slot,
+#level2-slots .drop-slot {
+  pointer-events: all;
+}
+
+/* ── Slot positions LEVEL 2 (% relative to #circuit-area)
+      Calibrated to parallel_circuit.png (601x592)
+      Top row:    4 slots (TL corner, pline-left, pline-right, TR corner)
+      Mid left:   switch
+      Mid right:  2 corners stacked
+      Center:     lamp
+      Bottom:     BL corner, battery, BR corner ── */
+#p-slot-corner-tl    { left: 2%;   top: 2%;   width: 19%; aspect-ratio: 1; }
+#p-slot-pline-left   { left: 23%;  top: 2%;   width: 19%; aspect-ratio: 1; }
+#p-slot-pline-right  { left: 57%;  top: 2%;   width: 19%; aspect-ratio: 1; }
+#p-slot-corner-tr    { left: 78%;  top: 2%;   width: 19%; aspect-ratio: 1; }
+#p-slot-mid-left     { left: 2%;   top: 38%;  width: 21%; aspect-ratio: 1; }
+#p-slot-corner-mr-top{ left: 78%;  top: 26%;  width: 19%; aspect-ratio: 1; }
+#p-slot-lamp-center  { left: 39%;  top: 38%;  width: 19%; aspect-ratio: 1; }
+#p-slot-corner-mr-bot{ left: 78%;  top: 52%;  width: 19%; aspect-ratio: 1; }
+#p-slot-corner-bl    { left: 2%;   top: 77%;  width: 19%; aspect-ratio: 1; }
+#p-slot-battery      { left: 39%;  top: 77%;  width: 19%; aspect-ratio: 1; }
+#p-slot-corner-br    { left: 78%;  top: 77%;  width: 19%; aspect-ratio: 1; }
+
+/* ── Utility ── */
+.hidden { display: none !important; }
 
 /* ── Drag-over highlight ── */
 .drop-slot.drag-over {
@@ -335,6 +406,9 @@ body {
   object-fit: contain;
   pointer-events: none;
   display: block;
+  background: #ffffff;
+  border-radius: var(--radius-xs);
+  padding: 4px;
 }
 
 .piece-label {
@@ -603,6 +677,94 @@ body {
   font-size: clamp(0.85rem, 3.5vw, 1rem);
   padding: 14px;
 }
+
+/* ── Shared result image (success.png / fail.png) ── */
+.result-img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  animation: iconBounce 0.6s cubic-bezier(0.34, 1.7, 0.64, 1) 0.1s both;
+}
+
+/* ════════════════════════════════════════
+   FAIL OVERLAY
+════════════════════════════════════════ */
+#fail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 14, 28, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 8000;
+  animation: overlayFadeIn 0.45s ease;
+  padding: 20px;
+}
+
+#fail-overlay.hidden {
+  display: none;
+}
+
+.fail-content {
+  background: linear-gradient(160deg, #1E293B 0%, #1a1420 100%);
+  border-radius: var(--radius);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 36px 28px 32px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: successSlideUp 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.fail-content h2 {
+  font-size: clamp(1.3rem, 5vw, 1.7rem);
+  font-weight: 800;
+  margin-bottom: 10px;
+  background: linear-gradient(130deg, #FB923C, #FCD34D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fail-content p {
+  color: var(--text-muted);
+  font-size: clamp(0.8rem, 3vw, 0.9rem);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.fail-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.fail-buttons .btn {
+  flex: 1;
+  justify-content: center;
+  font-size: clamp(0.78rem, 3vw, 0.88rem);
+  padding: 12px 6px;
+}
+
+/* Danger button (Reiniciar in fail overlay) */
+.btn-danger {
+  background: linear-gradient(135deg, #EF4444, #B91C1C);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #DC2626, #991B1B);
+  box-shadow: 0 6px 22px rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
 
 /* ════════════════════════════════════════
    RESPONSIVE — TABLET & DESKTOP

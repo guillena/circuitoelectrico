@@ -2,88 +2,178 @@
 
 /* ════════════════════════════════════════════════════════
    CIRCUITO ELÉCTRICO — GAME LOGIC
-   Touch + Mouse unified drag & drop
+   Touch + Mouse unified drag & drop — Level 1 & 2
 ════════════════════════════════════════════════════════ */
 
 /* ──────────────────────────────────────────────────────
-   CONFIGURATION
+   LEVEL CONFIGURATIONS
    correctPiece: the piece type that must go in this slot
    rotation:     CSS degrees applied to the piece image when placed
 ────────────────────────────────────────────────────── */
-const SLOT_CONFIG = {
-  //               correctPiece   rotation
-  // corner.png base image = top-right corner (no rotation needed there)
-  'slot-corner-tl':     { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
-  'slot-top-right':     { correctPiece: 'lamp',    rotation:   0 },
-  'slot-corner-tr':     { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
-  'slot-mid-right':     { correctPiece: 'line',    rotation:  90 },
-  'slot-corner-br':     { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
-  'slot-bottom-center': { correctPiece: 'battery', rotation:   0 },
-  'slot-corner-bl':     { correctPiece: 'corner',  rotation: 180 },  // 180°
-  'slot-mid-left':      { correctPiece: 'switch',  rotation:   0 },
-};
-
-const PIECE_CONFIG = {
-  //           file              totalCount   label
-  lamp:    { file: 'lamp.png',    totalCount: 1, label: 'Lámpara' },
-  corner:  { file: 'corner.png',  totalCount: 4, label: 'Esquina' },
-  switch:  { file: 'switch.png',  totalCount: 1, label: 'Switch'  },
-  battery: { file: 'battery.png', totalCount: 1, label: 'Batería' },
-  line:    { file: 'line.png',    totalCount: 1, label: 'Línea'   },
+const LEVELS = {
+  1: {
+    circuitImage:  'images/serial_circuit.png',
+    circuitAlt:    'Diagrama del circuito en serie',
+    subtitle:      'Nivel 1 — Circuito en Serie',
+    slotGroupId:   'level1-slots',
+    slots: {
+      // corner.png base image = top-right corner (no rotation needed there)
+      'slot-corner-tl':     { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
+      'slot-top-right':     { correctPiece: 'lamp',    rotation:   0 },
+      'slot-corner-tr':     { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
+      'slot-mid-right':     { correctPiece: 'line',    rotation:  90 },
+      'slot-corner-br':     { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
+      'slot-bottom-center': { correctPiece: 'battery', rotation:   0 },
+      'slot-corner-bl':     { correctPiece: 'corner',  rotation: 180 },  // 180°
+      'slot-mid-left':      { correctPiece: 'switch',  rotation:   0 },
+    },
+    bank: {
+      lamp:    { file: 'lamp.png',    totalCount: 1, label: 'Lámpara'  },
+      corner:  { file: 'corner.png',  totalCount: 4, label: 'Esquina'  },
+      switch:  { file: 'switch.png',  totalCount: 1, label: 'Switch'   },
+      battery: { file: 'battery.png', totalCount: 1, label: 'Batería'  },
+      line:    { file: 'line.png',    totalCount: 1, label: 'Línea'    },
+    },
+    success: {
+      title: 'Circuito en Servicio',
+      msg:   'Construiste un circuito en serie.<br>La corriente dispone de un único recorrido.',
+      btn:   'Siguiente desafío',
+    },
+  },
+  2: {
+    circuitImage:  'images/parallel_circuit.png',
+    circuitAlt:    'Diagrama del circuito en paralelo',
+    subtitle:      'Nivel 2 — Circuito en Paralelo',
+    slotGroupId:   'level2-slots',
+    slots: {
+      // Same corner orientation rules as level 1
+      'p-slot-corner-tl':     { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
+      'p-slot-pline-left':    { correctPiece: 'pline',   rotation:   0 },
+      'p-slot-pline-right':   { correctPiece: 'pline',   rotation:   0 },
+      'p-slot-corner-tr':     { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
+      'p-slot-mid-left':      { correctPiece: 'switch',  rotation:   0 },
+      'p-slot-corner-mr-top': { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
+      'p-slot-lamp-center':   { correctPiece: 'lamp',    rotation:   0 },
+      'p-slot-corner-mr-bot': { correctPiece: 'corner',  rotation: 180 },  // 180°
+      'p-slot-corner-bl':     { correctPiece: 'corner',  rotation: 180 },  // 180°
+      'p-slot-battery':       { correctPiece: 'battery', rotation:   0 },
+      'p-slot-corner-br':     { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
+    },
+    bank: {
+      lamp:    { file: 'lamp.png',          totalCount: 1, label: 'Lámpara'   },
+      corner:  { file: 'corner.png',        totalCount: 4, label: 'Esquina'   },
+      switch:  { file: 'switch.png',        totalCount: 1, label: 'Switch'    },
+      battery: { file: 'battery.png',       totalCount: 1, label: 'Batería'   },
+      pline:   { file: 'line-parallel.png', totalCount: 2, label: 'Paralela'  },
+    },
+    success: {
+      title: 'Circuito en Servicio',
+      msg:   '¡Excelente! Construiste un circuito en paralelo.<br>La corriente tiene múltiples recorridos.',
+      btn:   '¡Felicitaciones!',
+    },
+  },
 };
 
 /* ──────────────────────────────────────────────────────
    GAME STATE
 ────────────────────────────────────────────────────── */
+let currentLevel = 1;
+let levelConfig  = LEVELS[1];
+
 let state = {
-  // slotId → { occupiedBy: string|null, isCorrect: bool|null }
-  slots: {},
-  // pieceType → remaining count in bank
-  bank: {},
-  // undo history stack: [{ pieceType, fromSlotId, toSlotId }, ...]
-  // fromSlotId === null means the piece came from the bank
-  history: [],
-  // 'IDLE' | 'IN_PROGRESS' | 'COMPLETE' | 'SUCCESS' | 'ERROR'
-  phase: 'IDLE',
+  slots:   {},  // slotId → { occupiedBy: string|null, isCorrect: bool|null }
+  bank:    {},  // pieceType → remaining count
+  history: [],  // undo stack: [{ pieceType, fromSlotId, toSlotId }]
+  phase:   'IDLE',
 };
 
 /* ──────────────────────────────────────────────────────
    DRAG STATE
 ────────────────────────────────────────────────────── */
 let drag = {
-  active:           false,
-  pieceType:        null,
-  fromSlotId:       null,   // null = dragged from bank
-  highlightedSlot:  null,   // currently highlighted drop-slot element
+  active:          false,
+  pieceType:       null,
+  fromSlotId:      null,
+  highlightedSlot: null,
 };
 
 /* ════════════════════════════════════════════════════════
    INITIALISATION
 ════════════════════════════════════════════════════════ */
-function initGame() {
-  // Build fresh state
+function initGame(level) {
+  currentLevel = level;
+  levelConfig  = LEVELS[level];
+
+  // Build fresh state from level config
   state.slots = {};
-  Object.keys(SLOT_CONFIG).forEach(id => {
+  Object.keys(levelConfig.slots).forEach(id => {
     state.slots[id] = { occupiedBy: null, isCorrect: null };
   });
 
   state.bank = {};
-  Object.keys(PIECE_CONFIG).forEach(type => {
-    state.bank[type] = PIECE_CONFIG[type].totalCount;
+  Object.keys(levelConfig.bank).forEach(type => {
+    state.bank[type] = levelConfig.bank[type].totalCount;
   });
 
   state.history = [];
   state.phase   = 'IDLE';
 
-  bindEvents();
+  updateLevelUI(level);
   renderAll();
+}
+
+/* ════════════════════════════════════════════════════════
+   LEVEL UI SWITCH
+════════════════════════════════════════════════════════ */
+function updateLevelUI(level) {
+  const cfg = LEVELS[level];
+
+  // Swap circuit image
+  const bg = document.getElementById('circuit-bg');
+  bg.src = cfg.circuitImage;
+  bg.alt = cfg.circuitAlt;
+
+  // Swap subtitle
+  document.getElementById('header-subtitle').textContent = cfg.subtitle;
+
+  // Swap slot groups
+  document.getElementById('level1-slots').classList.toggle('hidden', level !== 1);
+  document.getElementById('level2-slots').classList.toggle('hidden', level !== 2);
+
+  // Reset glow
+  const glow = document.getElementById('lamp-fixed-glow');
+  glow.classList.remove('lit');
+
+  // Update level pills
+  for (let i = 1; i <= 2; i++) {
+    const pill = document.getElementById(`pill-${i}`);
+    pill.className = 'level-pill';
+    if (i < level)      pill.classList.add('completed');
+    else if (i === level) pill.classList.add('active');
+    else                  pill.classList.add('locked');
+  }
+
+  // Show/hide bank pieces based on level config
+  const allPieceTypes = ['lamp', 'corner', 'switch', 'battery', 'line', 'pline'];
+  allPieceTypes.forEach(type => {
+    const el = document.getElementById(`bank-${type}`);
+    if (!el) return;
+    const inLevel = !!cfg.bank[type];
+    el.classList.toggle('hidden', !inLevel);
+  });
+
+  // Reset lamp slot effect from level 1 if transitioning
+  const slotLamp = document.getElementById('slot-top-right');
+  if (slotLamp) {
+    slotLamp.classList.remove('lamp-lit');
+    slotLamp.style.filter     = '';
+    slotLamp.style.transition = '';
+  }
 }
 
 /* ════════════════════════════════════════════════════════
    RENDER
 ════════════════════════════════════════════════════════ */
-
-/** Full re-render of all UI components from state. */
 function renderAll() {
   renderSlots();
   renderBank();
@@ -91,10 +181,12 @@ function renderAll() {
 }
 
 function renderSlots() {
-  Object.keys(SLOT_CONFIG).forEach(slotId => {
+  Object.keys(levelConfig.slots).forEach(slotId => {
     const el   = document.getElementById(slotId);
+    if (!el) return;
     const data = state.slots[slotId];
-    const cfg  = SLOT_CONFIG[slotId];
+    const cfg  = levelConfig.slots[slotId];
+    const bank = levelConfig.bank;
 
     // Reset
     el.innerHTML = '';
@@ -102,10 +194,10 @@ function renderSlots() {
 
     if (data.occupiedBy) {
       const img = document.createElement('img');
-      img.src           = `images/${PIECE_CONFIG[data.occupiedBy].file}`;
-      img.alt           = PIECE_CONFIG[data.occupiedBy].label;
+      img.src             = `images/${bank[data.occupiedBy].file}`;
+      img.alt             = bank[data.occupiedBy].label;
       img.style.transform = `rotate(${cfg.rotation}deg)`;
-      img.draggable     = false;
+      img.draggable       = false;
       el.appendChild(img);
 
       if (data.isCorrect === true)  el.classList.add('correct');
@@ -115,17 +207,19 @@ function renderSlots() {
 }
 
 function renderBank() {
-  Object.keys(PIECE_CONFIG).forEach(type => {
+  const bankCfg = levelConfig.bank;
+  Object.keys(bankCfg).forEach(type => {
     const bankEl  = document.getElementById(`bank-${type}`);
     const badgeEl = document.getElementById(`count-${type}`);
-    const count   = state.bank[type];
-    const total   = PIECE_CONFIG[type].totalCount;
+    if (!bankEl || !badgeEl) return;
+
+    const count = state.bank[type] ?? 0;
+    const total = bankCfg[type].totalCount;
 
     bankEl.classList.toggle('empty', count <= 0);
 
-    // Only show badge for pieces with totalCount > 1 (i.e. corners)
     if (total > 1) {
-      badgeEl.textContent  = `×${count}`;
+      badgeEl.textContent   = `×${count}`;
       badgeEl.style.display = count > 0 ? '' : 'none';
     }
   });
@@ -142,21 +236,31 @@ function renderButtons() {
 }
 
 /* ════════════════════════════════════════════════════════
-   EVENT BINDING
+   EVENT BINDING — called once on DOMContentLoaded
 ════════════════════════════════════════════════════════ */
 function bindEvents() {
-  // ── Bank pieces ──
-  Object.keys(PIECE_CONFIG).forEach(type => {
-    const el = document.getElementById(`bank-${type}`);
-    el.addEventListener('mousedown',  e => onStartFromBank(e, type));
-    el.addEventListener('touchstart', e => onStartFromBank(e, type), { passive: false });
+  // ── Bank pieces (event delegation — handles all types including pline) ──
+  document.getElementById('bank-pieces').addEventListener('mousedown',  e => {
+    const piece = e.target.closest('.bank-piece');
+    if (piece) onStartFromBank(e, piece.dataset.piece);
   });
+  document.getElementById('bank-pieces').addEventListener('touchstart', e => {
+    const piece = e.target.closest('.bank-piece');
+    if (piece) onStartFromBank(e, piece.dataset.piece);
+  }, { passive: false });
 
-  // ── Slots (re-drag placed pieces) ──
-  Object.keys(SLOT_CONFIG).forEach(slotId => {
-    const el = document.getElementById(slotId);
-    el.addEventListener('mousedown',  e => onStartFromSlot(e, slotId));
-    el.addEventListener('touchstart', e => onStartFromSlot(e, slotId), { passive: false });
+  // ── Slot drag-from — delegated to both slot groups ──
+  ['level1-slots', 'level2-slots'].forEach(groupId => {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.addEventListener('mousedown',  e => {
+      const slot = e.target.closest('[data-slot]');
+      if (slot) onStartFromSlot(e, slot.id);
+    });
+    group.addEventListener('touchstart', e => {
+      const slot = e.target.closest('[data-slot]');
+      if (slot) onStartFromSlot(e, slot.id);
+    }, { passive: false });
   });
 
   // ── Global move / end ──
@@ -166,25 +270,35 @@ function bindEvents() {
   document.addEventListener('touchend',    onDragEnd);
   document.addEventListener('touchcancel', onDragEnd);
 
-  // ── Buttons ──
+  // ── Control buttons ──
   document.getElementById('btn-undo').addEventListener('click',  doUndo);
   document.getElementById('btn-reset').addEventListener('click', doReset);
   document.getElementById('btn-test').addEventListener('click',  doTest);
 
-  const btnNext = document.getElementById('btn-next');
-  if (btnNext) {
-    btnNext.addEventListener('click', () => {
-      document.getElementById('success-overlay').classList.add('hidden');
-      // TODO: transition to Level 2
-    });
-  }
+  // ── Success overlay: next level / finish ──
+  document.getElementById('btn-next').addEventListener('click', () => {
+    document.getElementById('success-overlay').classList.add('hidden');
+    if (currentLevel === 1) {
+      initGame(2);
+    }
+    // Level 2 is the last level — button just closes overlay
+  });
+
+  // ── Fail overlay buttons ──
+  document.getElementById('btn-fail-back').addEventListener('click', () => {
+    document.getElementById('fail-overlay').classList.add('hidden');
+  });
+
+  document.getElementById('btn-fail-reset').addEventListener('click', () => {
+    document.getElementById('fail-overlay').classList.add('hidden');
+    doReset();
+  });
 }
 
 /* ════════════════════════════════════════════════════════
    DRAG — UNIFIED MOUSE + TOUCH
 ════════════════════════════════════════════════════════ */
 
-/** Extract {x, y} from mouse or touch event. */
 function getPos(e) {
   const src = e.touches?.[0] ?? e.changedTouches?.[0] ?? e;
   return { x: src.clientX, y: src.clientY };
@@ -196,8 +310,8 @@ function showGhost(pieceType, rotation, x, y) {
   const g = ghostEl();
   g.innerHTML = '';
   const img = document.createElement('img');
-  img.src             = `images/${PIECE_CONFIG[pieceType].file}`;
-  img.alt             = PIECE_CONFIG[pieceType].label;
+  img.src             = `images/${levelConfig.bank[pieceType].file}`;
+  img.alt             = levelConfig.bank[pieceType].label;
   img.style.transform = `rotate(${rotation}deg)`;
   img.draggable       = false;
   g.appendChild(img);
@@ -217,44 +331,38 @@ function hideGhost() {
   g.innerHTML = '';
 }
 
-/* ──────────────────────────────────────────────────────
-   Drag start – from bank
-────────────────────────────────────────────────────── */
+/* ── Drag start – from bank ── */
 function onStartFromBank(e, pieceType) {
-  if (drag.active)                     return;
-  if (state.bank[pieceType] <= 0)      return;
-  if (state.phase === 'SUCCESS')       return;
+  if (drag.active)                      return;
+  if (!levelConfig.bank[pieceType])     return;
+  if (state.bank[pieceType] <= 0)       return;
+  if (state.phase === 'SUCCESS')        return;
 
   e.preventDefault();
 
-  drag.active    = true;
-  drag.pieceType = pieceType;
+  drag.active     = true;
+  drag.pieceType  = pieceType;
   drag.fromSlotId = null;
 
   const pos = getPos(e);
   showGhost(pieceType, 0, pos.x, pos.y);
 }
 
-/* ──────────────────────────────────────────────────────
-   Drag start – from an occupied slot
-────────────────────────────────────────────────────── */
+/* ── Drag start – from an occupied slot ── */
 function onStartFromSlot(e, slotId) {
-  if (drag.active)                         return;
-  if (!state.slots[slotId].occupiedBy)     return;
-  if (state.phase === 'SUCCESS')           return;
+  if (drag.active)                      return;
+  if (!state.slots[slotId])             return;
+  if (!state.slots[slotId].occupiedBy)  return;
+  if (state.phase === 'SUCCESS')        return;
 
-  // Stop propagation so we don't also trigger a bank handler
   e.preventDefault();
   e.stopPropagation();
 
   const pieceType = state.slots[slotId].occupiedBy;
-  const rotation  = SLOT_CONFIG[slotId].rotation;
+  const rotation  = levelConfig.slots[slotId].rotation;
 
-  // Clear the source slot from STATE immediately
-  // (we restore it on drop failure in onDragEnd)
+  // Clear source slot immediately
   state.slots[slotId] = { occupiedBy: null, isCorrect: null };
-
-  // Clear visual immediately
   const slotEl = document.getElementById(slotId);
   slotEl.innerHTML = '';
   slotEl.className = 'drop-slot';
@@ -267,9 +375,7 @@ function onStartFromSlot(e, slotId) {
   showGhost(pieceType, rotation, pos.x, pos.y);
 }
 
-/* ──────────────────────────────────────────────────────
-   Drag move
-────────────────────────────────────────────────────── */
+/* ── Drag move ── */
 function onDragMove(e) {
   if (!drag.active) return;
   e.preventDefault();
@@ -277,12 +383,9 @@ function onDragMove(e) {
   const pos = getPos(e);
   moveGhost(pos.x, pos.y);
 
-  // ── Slot highlight under finger/cursor ──
-  // (ghost has pointer-events:none so elementFromPoint skips it)
   const elUnder      = document.elementFromPoint(pos.x, pos.y);
   const targetSlotEl = elUnder?.closest('[data-slot]');
 
-  // Remove previous highlight
   if (drag.highlightedSlot && drag.highlightedSlot !== targetSlotEl) {
     drag.highlightedSlot.classList.remove('drag-over');
     drag.highlightedSlot = null;
@@ -291,27 +394,21 @@ function onDragMove(e) {
   if (targetSlotEl) {
     const slotId   = targetSlotEl.id;
     const slotData = state.slots[slotId];
-    const canDrop  = !slotData.occupiedBy && slotId !== drag.fromSlotId;
-    if (canDrop) {
+    if (slotData && !slotData.occupiedBy && slotId !== drag.fromSlotId) {
       targetSlotEl.classList.add('drag-over');
       drag.highlightedSlot = targetSlotEl;
     }
   }
 }
 
-/* ──────────────────────────────────────────────────────
-   Drag end – drop or return
-────────────────────────────────────────────────────── */
+/* ── Drag end – drop or return ── */
 function onDragEnd(e) {
   if (!drag.active) return;
 
   const pos = getPos(e);
-
-  // Find element under finger/cursor (ghost is pointer-events:none, so it's skipped)
   const elUnder      = document.elementFromPoint(pos.x, pos.y);
   const targetSlotEl = elUnder?.closest('[data-slot]');
 
-  // Remove all drag-over highlights
   document.querySelectorAll('.drop-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
   drag.highlightedSlot = null;
 
@@ -320,7 +417,7 @@ function onDragEnd(e) {
   if (targetSlotEl) {
     const targetId   = targetSlotEl.id;
     const targetData = state.slots[targetId];
-    const canDrop    = !targetData.occupiedBy && targetId !== drag.fromSlotId;
+    const canDrop    = targetData && !targetData.occupiedBy && targetId !== drag.fromSlotId;
 
     if (canDrop) {
       commitDrop(drag.pieceType, drag.fromSlotId, targetId);
@@ -329,17 +426,15 @@ function onDragEnd(e) {
   }
 
   if (!dropped) {
-    // ── Return piece to its origin ──
+    // Return piece to origin
     if (drag.fromSlotId) {
-      // Restore source slot in state (visual restored via renderAll below)
-      const isCorrect = SLOT_CONFIG[drag.fromSlotId].correctPiece === drag.pieceType;
+      const isCorrect = levelConfig.slots[drag.fromSlotId].correctPiece === drag.pieceType;
       state.slots[drag.fromSlotId] = { occupiedBy: drag.pieceType, isCorrect };
     }
-    // If piece came from bank: bank count was never modified, so nothing to restore.
+    // If from bank: bank count was never modified
   }
 
   hideGhost();
-
   drag.active     = false;
   drag.pieceType  = null;
   drag.fromSlotId = null;
@@ -350,63 +445,40 @@ function onDragEnd(e) {
 /* ════════════════════════════════════════════════════════
    CORE GAME ACTIONS
 ════════════════════════════════════════════════════════ */
-
-/**
- * Permanently place a piece in a target slot.
- * Records the move in history and validates correctness.
- */
 function commitDrop(pieceType, fromSlotId, toSlotId) {
-  // Record for undo
   state.history.push({ pieceType, fromSlotId, toSlotId });
 
-  // Deduct from bank when piece came from bank
   if (fromSlotId === null) {
     state.bank[pieceType]--;
   }
-  // fromSlotId slot was already cleared in state during onStartFromSlot
-  // (or was null for bank), so nothing more to clear.
 
-  // Place in target
-  const isCorrect = SLOT_CONFIG[toSlotId].correctPiece === pieceType;
+  const isCorrect = levelConfig.slots[toSlotId].correctPiece === pieceType;
   state.slots[toSlotId] = { occupiedBy: pieceType, isCorrect };
 
-  // Trigger placement animation after render
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      const el = document.getElementById(toSlotId);
+      const el   = document.getElementById(toSlotId);
       const anim = isCorrect ? 'anim-place' : 'anim-shake';
       el.classList.add(anim);
       el.addEventListener('animationend', () => el.classList.remove(anim), { once: true });
     });
   });
 
-  // Update phase
   const allFilled = Object.values(state.slots).every(s => s.occupiedBy !== null);
-  if (allFilled) {
-    state.phase = 'COMPLETE';
-  } else {
-    state.phase = state.history.length > 0 ? 'IN_PROGRESS' : 'IDLE';
-  }
+  state.phase = allFilled ? 'COMPLETE' : (state.history.length > 0 ? 'IN_PROGRESS' : 'IDLE');
 }
 
-/* ──────────────────────────────────────────────────────
-   UNDO
-────────────────────────────────────────────────────── */
+/* ── UNDO ── */
 function doUndo() {
   if (state.history.length === 0) return;
 
   const last = state.history.pop();
-
-  // Clear destination slot
   state.slots[last.toSlotId] = { occupiedBy: null, isCorrect: null };
 
-  // Restore origin
   if (last.fromSlotId === null) {
-    // Piece came from bank → return to bank
     state.bank[last.pieceType]++;
   } else {
-    // Piece came from another slot → restore that slot
-    const isCorrect = SLOT_CONFIG[last.fromSlotId].correctPiece === last.pieceType;
+    const isCorrect = levelConfig.slots[last.fromSlotId].correctPiece === last.pieceType;
     state.slots[last.fromSlotId] = { occupiedBy: last.pieceType, isCorrect };
   }
 
@@ -414,40 +486,35 @@ function doUndo() {
   renderAll();
 }
 
-/* ──────────────────────────────────────────────────────
-   RESET
-────────────────────────────────────────────────────── */
+/* ── RESET ── */
 function doReset() {
-  // Clear all slots
-  Object.keys(SLOT_CONFIG).forEach(id => {
+  Object.keys(levelConfig.slots).forEach(id => {
     state.slots[id] = { occupiedBy: null, isCorrect: null };
   });
-
-  // Restore full bank
-  Object.keys(PIECE_CONFIG).forEach(type => {
-    state.bank[type] = PIECE_CONFIG[type].totalCount;
+  Object.keys(levelConfig.bank).forEach(type => {
+    state.bank[type] = levelConfig.bank[type].totalCount;
   });
 
   state.history = [];
   state.phase   = 'IDLE';
 
-  // Reset success effects
+  // Reset success/fail effects
   document.getElementById('success-overlay').classList.add('hidden');
+  document.getElementById('fail-overlay').classList.add('hidden');
   document.getElementById('lamp-fixed-glow').classList.remove('lit');
 
-  const slotLamp = document.getElementById('slot-top-right');
-  slotLamp.classList.remove('lamp-lit');
-  slotLamp.style.filter     = '';
-  slotLamp.style.transition = '';
+  // Reset lit slots
+  document.querySelectorAll('.drop-slot.lamp-lit').forEach(el => {
+    el.classList.remove('lamp-lit');
+    el.style.filter     = '';
+    el.style.transition = '';
+  });
 
   renderAll();
 }
 
-/* ──────────────────────────────────────────────────────
-   TEST CIRCUIT
-────────────────────────────────────────────────────── */
+/* ── TEST CIRCUIT ── */
 function doTest() {
-  // Safety check: all slots must be filled (button should be disabled otherwise)
   const allFilled = Object.values(state.slots).every(s => s.occupiedBy !== null);
   if (!allFilled) return;
 
@@ -464,77 +531,84 @@ function doTest() {
   renderAll();
 }
 
-/* ──────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════════
    SUCCESS SEQUENCE
-────────────────────────────────────────────────────── */
+════════════════════════════════════════════════════════ */
 function triggerSuccess() {
-  const slotLamp  = document.getElementById('slot-top-right');
-  const fixedGlow = document.getElementById('lamp-fixed-glow');
+  const cfg = levelConfig.success;
 
-  // Blink both lamps 3 times, then stay lit
+  // Update overlay content dynamically
+  document.getElementById('success-title').textContent = cfg.title;
+  document.getElementById('success-msg').innerHTML     = cfg.msg;
+  document.getElementById('btn-next-label').textContent = cfg.btn;
+
+  // Determine which lamp slots to animate for this level
+  const lampSlots = getLampSlots();
+
+  // Blink lamps
   let tick = 0;
-  const BLINK_INTERVAL = 280; // ms per half-cycle
-  const BLINKS = 6;           // 6 half-cycles = 3 full blinks
+  const BLINK_INTERVAL = 280;
+  const BLINKS         = 6;
 
   const blinkTimer = setInterval(() => {
     const lit = tick % 2 === 0;
-    slotLamp.style.filter = lit
-      ? 'brightness(2.2) drop-shadow(0 0 16px #FBBF24)'
-      : 'brightness(1)';
+    lampSlots.forEach(slotId => {
+      const el = document.getElementById(slotId);
+      if (!el) return;
+      el.style.filter = lit
+        ? 'brightness(2.2) drop-shadow(0 0 16px #FBBF24)'
+        : 'brightness(1)';
+    });
     tick++;
 
     if (tick >= BLINKS) {
       clearInterval(blinkTimer);
-      // Stay permanently lit
-      slotLamp.classList.add('lamp-lit');
-      slotLamp.style.filter     = '';
-      slotLamp.style.transition = '';
+      lampSlots.forEach(slotId => {
+        const el = document.getElementById(slotId);
+        if (!el) return;
+        el.classList.add('lamp-lit');
+        el.style.filter     = '';
+        el.style.transition = '';
+      });
     }
   }, BLINK_INTERVAL);
 
-  // Fixed lamp overlay blinks via CSS animation
-  fixedGlow.classList.add('lit');
+  // Fixed top lamp glow
+  document.getElementById('lamp-fixed-glow').classList.add('lit');
 
-  // Show success modal after lamps finish animating
   setTimeout(() => {
     document.getElementById('success-overlay').classList.remove('hidden');
   }, BLINK_INTERVAL * BLINKS + 600);
 }
 
-/* ──────────────────────────────────────────────────────
-   ERROR FEEDBACK
-────────────────────────────────────────────────────── */
+/** Returns the slot IDs of placed lamps for the current level. */
+function getLampSlots() {
+  return Object.entries(levelConfig.slots)
+    .filter(([, cfg]) => cfg.correctPiece === 'lamp')
+    .map(([id]) => id);
+}
+
+/* ── ERROR FEEDBACK ── */
 function triggerError() {
-  // Shake the test button
   const btn = document.getElementById('btn-test');
   btn.classList.add('anim-shake');
   btn.addEventListener('animationend', () => btn.classList.remove('anim-shake'), { once: true });
 
-  // Count how many pieces are wrong
-  const wrongCount = Object.values(state.slots).filter(s => s.isCorrect === false).length;
-  const msg = wrongCount === 1
-    ? '¡Corregí el circuito! Hay 1 pieza en el lugar incorrecto.'
-    : `¡Corregí el circuito! Hay ${wrongCount} piezas en lugares incorrectos.`;
-
-  showToast(msg, 'error');
+  document.getElementById('fail-overlay').classList.remove('hidden');
 }
 
-/* ──────────────────────────────────────────────────────
-   TOAST
-────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════
+   TOAST (kept for future use)
+════════════════════════════════════════════════════════ */
 let _toastTimer = null;
 
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast');
-
-  // Reset animation
   toast.classList.remove('show', 'toast-error');
-  void toast.offsetWidth; // force reflow
-
+  void toast.offsetWidth;
   toast.textContent = msg;
   if (type === 'error') toast.classList.add('toast-error');
   toast.classList.add('show');
-
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => {
     toast.classList.remove('show', 'toast-error');
@@ -544,4 +618,7 @@ function showToast(msg, type = 'info') {
 /* ════════════════════════════════════════════════════════
    BOOT
 ════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => {
+  bindEvents();
+  initGame(1);
+});
