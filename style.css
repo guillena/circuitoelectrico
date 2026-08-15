@@ -294,9 +294,7 @@ body {
 #p-slot-pline-right  { left: 57%;  top: 2%;   width: 19%; aspect-ratio: 1; }
 #p-slot-corner-tr    { left: 78%;  top: 2%;   width: 19%; aspect-ratio: 1; }
 #p-slot-mid-left     { left: 2%;   top: 38%;  width: 21%; aspect-ratio: 1; }
-#p-slot-corner-mr-top{ left: 78%;  top: 26%;  width: 19%; aspect-ratio: 1; }
 #p-slot-lamp-center  { left: 39%;  top: 38%;  width: 19%; aspect-ratio: 1; }
-#p-slot-corner-mr-bot{ left: 78%;  top: 52%;  width: 19%; aspect-ratio: 1; }
 #p-slot-corner-bl    { left: 2%;   top: 77%;  width: 19%; aspect-ratio: 1; }
 #p-slot-battery      { left: 39%;  top: 77%;  width: 19%; aspect-ratio: 1; }
 #p-slot-corner-br    { left: 78%;  top: 77%;  width: 19%; aspect-ratio: 1; }

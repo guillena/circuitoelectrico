@@ -46,18 +46,16 @@ const LEVELS = {
     subtitle:      'Nivel 2 — Circuito en Paralelo',
     slotGroupId:   'level2-slots',
     slots: {
-      // Same corner orientation rules as level 1
-      'p-slot-corner-tl':     { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
-      'p-slot-pline-left':    { correctPiece: 'pline',   rotation:   0 },
-      'p-slot-pline-right':   { correctPiece: 'pline',   rotation:   0 },
-      'p-slot-corner-tr':     { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
-      'p-slot-mid-left':      { correctPiece: 'switch',  rotation:   0 },
-      'p-slot-corner-mr-top': { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
-      'p-slot-lamp-center':   { correctPiece: 'lamp',    rotation:   0 },
-      'p-slot-corner-mr-bot': { correctPiece: 'corner',  rotation: 180 },  // 180°
-      'p-slot-corner-bl':     { correctPiece: 'corner',  rotation: 180 },  // 180°
-      'p-slot-battery':       { correctPiece: 'battery', rotation:   0 },
-      'p-slot-corner-br':     { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
+      // 4 corners at the 4 vertices (same orientation rules as level 1)
+      'p-slot-corner-tl':  { correctPiece: 'corner',  rotation: -90 },  // 90° izquierda
+      'p-slot-pline-left': { correctPiece: 'pline',   rotation:   0 },
+      'p-slot-pline-right':{ correctPiece: 'pline',   rotation:   0 },
+      'p-slot-corner-tr':  { correctPiece: 'corner',  rotation:   0 },  // base, sin rotar
+      'p-slot-mid-left':   { correctPiece: 'switch',  rotation:   0 },
+      'p-slot-lamp-center':{ correctPiece: 'lamp',    rotation:   0 },
+      'p-slot-corner-bl':  { correctPiece: 'corner',  rotation: 180 },  // 180°
+      'p-slot-battery':    { correctPiece: 'battery', rotation:   0 },
+      'p-slot-corner-br':  { correctPiece: 'corner',  rotation:  90 },  // 90° derecha
     },
     bank: {
       lamp:    { file: 'lamp.png',          totalCount: 1, label: 'Lámpara'   },
@@ -140,9 +138,22 @@ function updateLevelUI(level) {
   document.getElementById('level1-slots').classList.toggle('hidden', level !== 1);
   document.getElementById('level2-slots').classList.toggle('hidden', level !== 2);
 
-  // Reset glow
+  // Reset glow and reposition for this level's fixed lamp
   const glow = document.getElementById('lamp-fixed-glow');
   glow.classList.remove('lit');
+  if (level === 1) {
+    // serial_circuit.png — lamp is at ~38% from left
+    glow.style.left   = '28%';
+    glow.style.top    = '0%';
+    glow.style.width  = '20%';
+    glow.style.height = '18%';
+  } else {
+    // parallel_circuit.png — lamp center at ~49% x, ~17% y
+    glow.style.left   = '38%';
+    glow.style.top    = '5%';
+    glow.style.width  = '24%';
+    glow.style.height = '20%';
+  }
 
   // Update level pills
   for (let i = 1; i <= 2; i++) {
