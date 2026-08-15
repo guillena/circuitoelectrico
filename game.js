@@ -67,7 +67,7 @@ const LEVELS = {
     success: {
       title: 'Circuito en Servicio',
       msg:   '¡Excelente! Construiste un circuito en paralelo.<br>La corriente tiene múltiples recorridos.',
-      btn:   '¡Felicitaciones!',
+      btn:   '↩ Volver al inicio',
     },
   },
 };
@@ -291,8 +291,10 @@ function bindEvents() {
     document.getElementById('success-overlay').classList.add('hidden');
     if (currentLevel === 1) {
       initGame(2);
+    } else {
+      // Level 2 complete — volver a la pantalla inicial
+      showSplash();
     }
-    // Level 2 is the last level — button just closes overlay
   });
 
   // ── Fail overlay buttons ──
@@ -613,6 +615,45 @@ function triggerError() {
 ════════════════════════════════════════════════════════ */
 let _toastTimer = null;
 
+/* ════════════════════════════════════════════════════════
+   SHOW SPLASH (called after Level 2 success)
+════════════════════════════════════════════════════════ */
+function showSplash() {
+  // Reset game back to level 1 state (without showing the game yet)
+  currentLevel = 1;
+  levelConfig  = LEVELS[1];
+
+  // Hide all overlays
+  document.getElementById('success-overlay').classList.add('hidden');
+  document.getElementById('fail-overlay').classList.add('hidden');
+
+  // Show splash with fade-in animation
+  const splashEl = document.getElementById('splash-overlay');
+  splashEl.classList.remove('hidden', 'splash-exit');
+  // Trigger reflow to restart the CSS transition
+  void splashEl.offsetWidth;
+  splashEl.style.opacity   = '0';
+  splashEl.style.transform = 'scale(0.97)';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      splashEl.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
+      splashEl.style.opacity    = '1';
+      splashEl.style.transform  = 'scale(1)';
+    });
+  });
+
+  // Clean up inline styles after animation
+  splashEl.addEventListener('transitionend', () => {
+    splashEl.style.transition = '';
+    splashEl.style.opacity    = '';
+    splashEl.style.transform  = '';
+  }, { once: true });
+}
+
+/* ════════════════════════════════════════════════════════
+   TOAST (kept for future use)
+════════════════════════════════════════════════════════ */
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast');
   toast.classList.remove('show', 'toast-error');
