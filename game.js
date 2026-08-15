@@ -620,5 +620,17 @@ function showToast(msg, type = 'info') {
 ════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
-  initGame(1);
+
+  // ── Splash screen ──
+  const splashEl  = document.getElementById('splash-overlay');
+  const btnStart  = document.getElementById('btn-start');
+
+  btnStart.addEventListener('click', () => {
+    // Animate out
+    splashEl.classList.add('splash-exit');
+    splashEl.addEventListener('transitionend', () => {
+      splashEl.classList.add('hidden');
+      initGame(1);
+    }, { once: true });
+  });
 });

@@ -6,6 +6,7 @@
   <meta name="description" content="Juego educativo de circuitos eléctricos. Completá el circuito en serie y paralelo arrastrando las piezas a sus posiciones correctas.">
   <meta name="theme-color" content="#0F172A">
   <title>Circuito Eléctrico</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +18,9 @@
 
     <!-- ── HEADER ── -->
     <header id="game-header">
-      <div class="header-icon">⚡</div>
+      <div class="header-icon">
+        <img src="images/Logokume.png" alt="Küm Espacio" class="logo-img">
+      </div>
       <div class="header-text">
         <h1>Circuito Eléctrico</h1>
         <p id="header-subtitle">Nivel 1 &mdash; Circuito en Serie</p>
@@ -174,6 +177,43 @@
 
   <!-- ── DRAG GHOST (follows finger/cursor) ── -->
   <div id="drag-ghost" aria-hidden="true"></div>
+
+  <!-- ── SPLASH / INTRO SCREEN ── -->
+  <div id="splash-overlay" role="dialog" aria-modal="true" aria-labelledby="splash-title">
+    <div class="splash-content">
+
+      <!-- Decorative Küm color bar -->
+      <div class="kum-bar">
+        <span class="kum-bar-seg" style="background:#F5E642"></span>
+        <span class="kum-bar-seg" style="background:#4DD9D5"></span>
+        <span class="kum-bar-seg" style="background:#F5896B"></span>
+      </div>
+
+      <!-- Logo -->
+      <img src="images/Logokume.png" alt="Küm Espacio" class="splash-logo">
+
+      <!-- Message -->
+      <div class="splash-message">
+        <p class="splash-remember">RECARDÁ,</p>
+        <p class="splash-sub">que no solo estás jugando,</p>
+        <p class="splash-sub">estás <span class="splash-highlight">aprendiendo</span>.</p>
+      </div>
+
+      <!-- Start button -->
+      <button id="btn-start" class="btn btn-start">
+        <span class="btn-icon">⚡</span>
+        <span>Iniciar</span>
+      </button>
+
+      <!-- Bottom color bar -->
+      <div class="kum-bar kum-bar-bottom">
+        <span class="kum-bar-seg" style="background:#F5896B"></span>
+        <span class="kum-bar-seg" style="background:#4DD9D5"></span>
+        <span class="kum-bar-seg" style="background:#F5E642"></span>
+      </div>
+
+    </div>
+  </div>
 
   <script src="game.js"></script>
 </body>
